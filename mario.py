@@ -139,25 +139,47 @@ class Player(pygame.sprite.Sprite):
             tile_width * self.pos[0] + 15, tile_height * self.pos[1] + 5)
 
 
+class Camera:
+    # зададим начальный сдвиг камеры
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    # сдвинуть объект obj на смещение камеры
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    # позиционировать камеру на объекте target
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - WIDTH // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
+
 if __name__ == '__main__':
     start_screen()
+    camera = Camera()
     player = None
     level = load_level('level1')
     player, level_x, level_y = generate_level(level)
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:
-                    move_hero(player, 'right')
-                if event.key == pygame.K_LEFT:
-                    move_hero(player, 'left')
-                if event.key == pygame.K_UP:
-                    move_hero(player, 'up')
-                if event.key == pygame.K_DOWN:
-                    move_hero(player, 'down')
-                screen.fill(pygame.Color('white'))
+        # изменяем ракурс камеры
+        camera.update(player);
+        # обновляем положение всех спрайтов
+        for sprite in all_sprites:
+            camera.apply(sprite)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RIGHT:
+                        move_hero(player, 'right')
+                    if event.key == pygame.K_LEFT:
+                        move_hero(player, 'left')
+                    if event.key == pygame.K_UP:
+                        move_hero(player, 'up')
+                    if event.key == pygame.K_DOWN:
+                        move_hero(player, 'down')
+                    screen.fill(pygame.Color('white'))
         tiles_group.draw(screen)
         player_group.draw(screen)
         pygame.display.flip()
